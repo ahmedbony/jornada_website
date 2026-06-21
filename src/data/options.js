@@ -1,0 +1,70 @@
+export const OPTIONS = [
+  {
+    id: "managed-recharge",
+    icon: "⇊",
+    title: "Managed aquifer recharge",
+    description: "Intentionally infiltrate water to recharge aquifers for later use.",
+    tags: ["Recharge", "Infrastructure"],
+    cost: "Medium cost",
+    context: "groundwater",
+  },
+  {
+    id: "groundwater-plan",
+    icon: "📋",
+    title: "Groundwater conservation plan",
+    description: "Develop and implement a plan to reduce groundwater use.",
+    tags: ["Planning", "Management"],
+    cost: "Low cost",
+    context: "groundwater",
+  },
+  {
+    id: "irrigation-scheduling",
+    icon: "⏱",
+    title: "Irrigation scheduling",
+    description: "Adjust irrigation timing and amounts to reduce unnecessary pumping.",
+    tags: ["Efficiency", "On-farm"],
+    cost: "Low cost",
+    context: "irrigated",
+  },
+  {
+    id: "water-lease",
+    icon: "🤝",
+    title: "Water lease and purchase",
+    description: "Acquire or lease water rights to meet needs.",
+    tags: ["Market-based", "Transfer"],
+    cost: "High cost",
+    context: "canals",
+  },
+  {
+    id: "forecasting-tools",
+    icon: "📈",
+    title: "Forecasting tools",
+    description: "Use data and models to forecast aquifer levels and availability.",
+    tags: ["Information", "Planning"],
+    cost: "Low cost",
+    context: "groundwater",
+  },
+  {
+    id: "drought-planning",
+    icon: "🛡",
+    title: "Drought planning",
+    description: "Plan for drought conditions and water shortages.",
+    tags: ["Planning", "Resilience"],
+    cost: "Low cost",
+    context: "rangeland",
+  },
+];
+
+// Positions are percentages of the landscape illustration's width/height,
+// matched to where each label is actually printed in the image. width/height
+// size the invisible clickable hotspot over that label.
+export const LANDSCAPE_PINS = [
+  { context: "riparian", label: "Streams / riparian areas", top: "17%", left: "13%", width: "17%", height: "14%" },
+  { context: "reservoir", label: "Reservoir", top: "9%", left: "31%", width: "13%", height: "9%" },
+  { context: "canals", label: "Canals & ditches", top: "14%", left: "59%", width: "15%", height: "9%" },
+  { context: "groundwater", label: "Groundwater / recharge", top: "56%", left: "22%", width: "16%", height: "12%" },
+  { context: "irrigated", label: "Irrigated fields", top: "57%", left: "41%", width: "14%", height: "8%" },
+  { context: "livestock", label: "Livestock area", top: "58%", left: "62%", width: "15%", height: "9%" },
+  { context: "rangeland", label: "Rangeland", top: "29%", left: "93%", width: "13%", height: "9%" },
+  { context: "retired", label: "Retired farmland", top: "59%", left: "93%", width: "13%", height: "11%" },
+];
