@@ -37,7 +37,7 @@ export default function Home() {
           <p>Browse guides, case studies, calculators, funding links, and technical resources.</p>
         </Link>
 
-        <div className="entry-card" aria-disabled="true" title="Coming soon" style={{ opacity: 0.7, cursor: "default" }}>
+        <Link className="entry-card" to="/guided-explorer">
           <span className="entry-icon" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z" />
@@ -47,11 +47,8 @@ export default function Home() {
             </svg>
           </span>
           <h2>Build an Adaptation Packet</h2>
-          <p>
-            Use the guided explorer to assemble a tailored packet from
-            options and resources. <em>(Coming soon)</em>
-          </p>
-        </div>
+          <p>Use the guided explorer to assemble a tailored packet from options and resources.</p>
+        </Link>
       </section>
     </div>
   );

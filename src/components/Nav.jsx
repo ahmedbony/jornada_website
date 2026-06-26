@@ -7,7 +7,7 @@ const NAV_LINKS = [
   { label: "Home", to: "/" },
   { label: "Browse Options", to: "/browse-options" },
   { label: "Tools & Resources", to: "/tools-resources" },
-  // { label: "Build a Packet", to: "/build-a-packet" },
+  { label: "Guided Explorer", to: "/guided-explorer" },
 ];
 
 export default function Nav() {

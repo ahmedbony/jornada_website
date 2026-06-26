@@ -1,13 +1,7 @@
 import { useMemo, useState } from "react";
-import { OPTIONS, LANDSCAPE_PINS } from "../data/options.js";
-
-const CONTEXT_CHOICES = [
-  { key: "groundwater", label: "Groundwater / recharge" },
-  { key: "canals", label: "Surface water / canals" },
-  { key: "irrigated", label: "Irrigated fields" },
-  { key: "livestock", label: "Livestock area" },
-  { key: "rangeland", label: "Rangeland" },
-];
+import { Link } from "react-router-dom";
+import { OPTIONS, LANDSCAPE_PINS, costLabel } from "../data/options.js";
+import { CONTEXTS } from "../data/taxonomy.js";
 
 export default function BrowseOptions() {
   const [tab, setTab] = useState("list"); // "list" | "landscape"
@@ -15,7 +9,7 @@ export default function BrowseOptions() {
   const [contextFilter, setContextFilter] = useState("groundwater");
 
   const contextLabel = (key) =>
-    CONTEXT_CHOICES.find((c) => c.key === key)?.label ??
+    CONTEXTS.find((c) => c.key === key)?.label ??
     LANDSCAPE_PINS.find((p) => p.context === key)?.label ??
     key;
 
@@ -25,7 +19,7 @@ export default function BrowseOptions() {
       const matchesSearch =
         q === "" ||
         `${opt.title} ${opt.description} ${opt.tags.join(" ")}`.toLowerCase().includes(q);
-      const matchesContext = !contextFilter || opt.context === contextFilter;
+      const matchesContext = !contextFilter || opt.context.includes(contextFilter);
       return matchesSearch && matchesContext;
     });
   }, [search, contextFilter]);
@@ -55,7 +49,7 @@ export default function BrowseOptions() {
           <details className="filter-group" open>
             <summary>Context</summary>
             <div className="opts">
-              {CONTEXT_CHOICES.map((c) => (
+              {CONTEXTS.map((c) => (
                 <label key={c.key}>
                   <input
                     type="checkbox"
@@ -193,8 +187,9 @@ export default function BrowseOptions() {
                 <p>{opt.description}</p>
                 <div className="tag-row">
                   {opt.tags.map((t) => <span className="tag" key={t}>{t}</span>)}
-                  <span className="tag cost">{opt.cost}</span>
+                  <span className="tag cost">{costLabel(opt.cost)}</span>
                 </div>
+                <Link className="learn-more" to={`/options/${opt.id}`}>Learn more →</Link>
               </article>
             ))}
             {filtered.length === 0 && (

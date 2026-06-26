@@ -1,9 +1,13 @@
 import { useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { RESOURCE_TYPES, RESOURCES } from "../data/resources.js";
 
 export default function ToolsResources() {
+  const location = useLocation();
+  const presetType = location.state?.presetType;
+
   const [search, setSearch] = useState("");
-  const [activeTypes, setActiveTypes] = useState([]);
+  const [activeTypes, setActiveTypes] = useState(presetType ? [presetType] : []);
 
   function toggleType(key) {
     setActiveTypes((prev) =>
