@@ -1,8 +1,13 @@
+import { useEffect } from "react";
+import { trackPageView } from "../hooks/useAnalytics.js";
 import { useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { RESOURCE_TYPES, RESOURCES } from "../data/resources.js";
+import { useContent } from "../context/ContentContext.jsx";
+import { RESOURCE_TYPES } from "../data/resources.js";
 
 export default function ToolsResources() {
+  const { resources: RESOURCES } = useContent();
+  useEffect(() => { trackPageView("/tools-resources"); }, []);
   const location = useLocation();
   const presetType = location.state?.presetType;
 

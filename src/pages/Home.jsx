@@ -9,8 +9,8 @@ export default function Home() {
           Find the right water adaptation for your operation
         </h1>
         <p className="lede">
-          Search the option library directly, browse supporting tools and
-          guides, or build a tailored packet for your farm or ranch.
+          Search the option library, browse supporting tools and guides, or use
+          the guided explorer to find and assemble an adaptation packet.
         </p>
       </section>
 
@@ -46,8 +46,8 @@ export default function Home() {
               <line x1="8" y1="17" x2="16" y2="17" />
             </svg>
           </span>
-          <h2>Build an Adaptation Packet</h2>
-          <p>Use the guided explorer to assemble a tailored packet from options and resources.</p>
+          <h2>Guided Explorer</h2>
+          <p>Use the guided explorer to find suggested options and generate a tailored adaptation packet.</p>
         </Link>
       </section>
     </div>

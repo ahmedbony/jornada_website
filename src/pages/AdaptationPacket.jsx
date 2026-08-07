@@ -1,56 +1,25 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect } from "react";
+import { trackPageView, trackGeneratePDF } from "../hooks/useAnalytics.js";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { usePacket } from "../context/PacketContext.jsx";
-import { OPTIONS, costLabel } from "../data/options.js";
-import { RESOURCES } from "../data/resources.js";
+import { useContent } from "../context/ContentContext.jsx";
 import { CONTEXTS, WATER_STRESSES, WATER_OUTCOMES, PRIORITIES, labelFor } from "../data/taxonomy.js";
-
-function overlapScore(optionList = [], selected = []) {
-  return optionList.filter((tag) => selected.includes(tag)).length;
-}
+import { costLabel } from "../data/options.js";
 
 export default function AdaptationPacket() {
-  const { answers, hasGenerated } = usePacket();
+  const { answers, packetItems, removeFromPacket } = usePacket();
+  const { options: OPTIONS, resources: RESOURCES } = useContent();
   const navigate = useNavigate();
   const contentRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
 
-  const recommended = useMemo(() => {
-    return [...OPTIONS]
-      .map((opt) => ({
-        opt,
-        score:
-          overlapScore(opt.context, answers.context) * 2 +
-          overlapScore(opt.waterStress, answers.waterStress) * 2 +
-          overlapScore(opt.waterOutcome, answers.waterOutcome) * 2 +
-          overlapScore(opt.priorities, answers.priorities),
-      }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
-      .map((s) => s.opt);
-  }, [answers]);
+  useEffect(() => { trackPageView("/packet"); }, []);
 
-  const selectedResources = useMemo(() => {
-    // Show resources that share a tag with any recommended option's tags
-    const tagPool = new Set(recommended.flatMap((o) => o.tags.map((t) => t.toLowerCase())));
-    const scored = RESOURCES.map((r) => ({
-      r,
-      score: r.tags.filter((t) => tagPool.has(t.toLowerCase())).length,
-    }));
-    const withMatches = scored.filter((s) => s.score > 0).sort((a, b) => b.score - a.score);
-    const pool = withMatches.length > 0 ? withMatches.map((s) => s.r) : RESOURCES;
-    return pool.slice(0, 4);
-  }, [recommended]);
-
-  const questions = useMemo(() => {
-    return recommended.map(
-      (opt) => `What are the costs and benefits of ${opt.title.toLowerCase()} for this operation?`
-    );
-  }, [recommended]);
-
-  function handlePrint() {
-    window.print();
-  }
+  const packetOptions   = packetItems.filter((p) => p.type === "option")
+    .map((p) => OPTIONS.find((o) => o.id === p.id)).filter(Boolean);
+  const packetResources = packetItems.filter((p) => p.type === "resource")
+    .map((p) => RESOURCES.find((r) => r.id === p.id)).filter(Boolean);
 
   async function handleDownloadPDF() {
     if (!contentRef.current || downloading) return;
@@ -60,111 +29,89 @@ export default function AdaptationPacket() {
         import("html2canvas"),
         import("jspdf"),
       ]);
-
-      const canvas = await html2canvas(contentRef.current, {
+      const el = contentRef.current;
+      const canvas = await html2canvas(el, {
         scale: 2,
         backgroundColor: "#ffffff",
         useCORS: true,
-        ignoreElements: (el) => el.classList?.contains("packet-actions"),
+        windowWidth: 900,
+        ignoreElements: (node) => node.classList?.contains("packet-actions"),
       });
-
-      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position -= pageHeight;
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const imgH  = (canvas.height * pageW) / canvas.width;
+      let remaining = imgH;
+      let yOffset   = 0;
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, yOffset, pageW, imgH);
+      remaining -= pageH;
+      while (remaining > 0) {
+        yOffset -= pageH;
         pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, yOffset, pageW, imgH);
+        remaining -= pageH;
       }
-
       pdf.save("adaptation-packet.pdf");
-    } catch (err) {
-      console.error("PDF generation failed:", err);
-      alert("Sorry, the PDF couldn't be generated. Please try again.");
+      trackGeneratePDF();
+    } catch {
+      alert("PDF export failed. Try browser Print → Save as PDF instead.");
     } finally {
       setDownloading(false);
     }
   }
 
-  async function handleShare() {
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "My Adaptation Packet", url });
-      } catch {
-        /* user cancelled share — no action needed */
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-      alert("Link copied to clipboard.");
-    }
-  }
-
-  if (!hasGenerated) {
-    return (
-      <div className="page">
-        <div className="page-head">
-          <div className="eyebrow">Adaptation Packet</div>
-          <h1>No packet generated yet</h1>
-          <p>Answer a few questions in the Guided Explorer to assemble a tailored adaptation packet.</p>
-        </div>
-        <button className="btn btn-primary" onClick={() => navigate("/guided-explorer")}>
-          Go to Guided Explorer
-        </button>
-      </div>
-    );
-  }
+  const hasContext = answers.context.length || answers.waterStress.length ||
+    answers.waterOutcome.length || answers.priorities.length;
 
   return (
     <div className="page packet-page" ref={contentRef}>
       <div className="page-head packet-head">
         <div>
-          <div className="eyebrow">Guided explorer output</div>
+          <div className="eyebrow">Adaptation Packet</div>
           <h1>Your Adaptation Packet</h1>
-          <p>Assembled from the Adaptation Options Library and the Tools &amp; Resources Library.</p>
+          <p>Assembled from the options library based on your guided explorer responses.</p>
         </div>
         <div className="packet-actions">
           <button className="btn" onClick={handleDownloadPDF} disabled={downloading}>
             {downloading ? "Generating…" : "⬇ Download PDF"}
           </button>
-          <button className="btn" onClick={handlePrint}>🖨 Print</button>
-          <button className="btn" onClick={handleShare}>↗ Share</button>
+          <button className="btn" onClick={() => navigate("/guided-explorer")}>
+            ← Back to Explorer
+          </button>
         </div>
       </div>
 
-      <div className="packet-top-grid">
+      {/* Water-stress profile */}
+      {hasContext && (
         <div className="packet-panel">
           <h2>Water-stress profile</h2>
           <table className="profile-table">
             <tbody>
-              <tr>
-                <th>Context</th>
-                <td>{answers.context.length ? answers.context.map((k) => labelFor(CONTEXTS, k)).join("; ") : "Not specified"}</td>
-              </tr>
-              <tr>
-                <th>Water stresses</th>
-                <td>{answers.waterStress.length ? answers.waterStress.map((k) => labelFor(WATER_STRESSES, k)).join("; ") : "Not specified"}</td>
-              </tr>
-              <tr>
-                <th>Water outcome focus</th>
-                <td>{answers.waterOutcome.length ? answers.waterOutcome.map((k) => labelFor(WATER_OUTCOMES, k)).join("; ") : "Not specified"}</td>
-              </tr>
-              <tr>
-                <th>Priorities</th>
-                <td>{answers.priorities.length ? answers.priorities.map((k) => labelFor(PRIORITIES, k)).join("; ") : "Not specified"}</td>
-              </tr>
-              {answers.notes && (
+              {answers.context.length > 0 && (
+                <tr>
+                  <th>Context</th>
+                  <td>{answers.context.map((k) => labelFor(CONTEXTS, k)).join("; ")}</td>
+                </tr>
+              )}
+              {answers.waterStress.length > 0 && (
+                <tr>
+                  <th>Water stresses</th>
+                  <td>{answers.waterStress.map((k) => labelFor(WATER_STRESSES, k)).join("; ")}</td>
+                </tr>
+              )}
+              {answers.waterOutcome.length > 0 && (
+                <tr>
+                  <th>Water outcome focus</th>
+                  <td>{answers.waterOutcome.map((k) => labelFor(WATER_OUTCOMES, k)).join("; ")}</td>
+                </tr>
+              )}
+              {answers.priorities.length > 0 && (
+                <tr>
+                  <th>Priorities</th>
+                  <td>{answers.priorities.map((k) => labelFor(PRIORITIES, k)).join("; ")}</td>
+                </tr>
+              )}
+              {answers.notes?.trim() && (
                 <tr>
                   <th>Notes</th>
                   <td>{answers.notes}</td>
@@ -173,59 +120,78 @@ export default function AdaptationPacket() {
             </tbody>
           </table>
         </div>
+      )}
 
+      {/* Selected options */}
+      {packetOptions.length > 0 && (
         <div className="packet-panel">
-          <h2>Related context pages</h2>
-          <ul className="chevron-list">
-            {answers.context.slice(0, 3).map((k) => (
-              <li key={k}>
-                <Link to="/browse-options">📄 {labelFor(CONTEXTS, k)} overview</Link>
-              </li>
+          <h2>Adaptation options ({packetOptions.length})</h2>
+          <div className="card-grid">
+            {packetOptions.map((opt) => (
+              <article className="card" key={opt.id}>
+                <span className="card-icon">{opt.icon}</span>
+                <h3>{opt.title}</h3>
+                <p>{opt.description}</p>
+                <div className="tag-row">
+                  {opt.tags.map((t) => <span className="tag" key={t}>{t}</span>)}
+                  <span className="tag cost">{costLabel(opt.cost)}</span>
+                </div>
+                <div className="card-actions">
+                  <Link className="learn-more" to={`/options/${opt.id}`}>Learn more →</Link>
+                  <button className="btn-packet-sm in-packet"
+                    onClick={() => removeFromPacket(opt.id)}>✕ Remove</button>
+                </div>
+              </article>
             ))}
-            {answers.context.length === 0 && <li className="no-selection">No context selected yet.</li>}
-          </ul>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="packet-panel">
-        <h2>Recommended adaptation options</h2>
-        <div className="card-grid">
-          {recommended.map((opt) => (
-            <article className="card" key={opt.id}>
-              <span className="card-icon">{opt.icon}</span>
-              <h3>{opt.title}</h3>
-              <p>{opt.description}</p>
-              <div className="tag-row">
-                <span className="tag cost">{costLabel(opt.cost)}</span>
-              </div>
-              <Link className="learn-more" to={`/options/${opt.id}`}>Learn more →</Link>
-            </article>
-          ))}
-        </div>
-      </div>
-
-      <div className="packet-bottom-grid">
+      {/* Selected resources */}
+      {packetResources.length > 0 && (
         <div className="packet-panel">
-          <h2>Selected case studies and resources</h2>
-          <ul className="chevron-list">
-            {selectedResources.map((r) => (
-              <li key={r.id}>
-                <span>{r.icon} {r.title}</span>
-                <span className="chevron">›</span>
-              </li>
+          <h2>Resources ({packetResources.length})</h2>
+          <div className="card-grid">
+            {packetResources.map((res) => (
+              <article className="card" key={res.id}>
+                <span className="card-icon">{res.icon}</span>
+                <h3>{res.title}</h3>
+                <p>{res.description}</p>
+                <div className="tag-row">
+                  {res.tags.map((t) => <span className="tag" key={t}>{t}</span>)}
+                </div>
+                <button className="btn-packet-sm in-packet"
+                  onClick={() => removeFromPacket(res.id)}>✕ Remove</button>
+              </article>
             ))}
-          </ul>
+          </div>
         </div>
+      )}
 
-        <div className="packet-panel">
-          <h2>Questions to investigate next</h2>
-          <ul className="question-list">
-            {questions.map((q, i) => (
-              <li key={i}>❓ {q}</li>
-            ))}
-            {questions.length === 0 && <li className="no-selection">Add more answers to generate questions.</li>}
-          </ul>
+      {/* Empty state */}
+      {packetOptions.length === 0 && packetResources.length === 0 && (
+        <div className="packet-panel" style={{ textAlign: "center", padding: 40 }}>
+          <p style={{ color: "var(--ink-400)", marginBottom: 16 }}>
+            No items in your packet yet. Use <strong>+ Packet</strong> on any option to add it.
+          </p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+            <button className="btn btn-primary" onClick={() => navigate("/guided-explorer")}>
+              Back to Guided Explorer
+            </button>
+            <button className="btn" onClick={() => navigate("/browse-options")}>
+              Browse Options
+            </button>
+          </div>
         </div>
+      )}
+
+      <div className="packet-actions" style={{ marginTop: 24 }}>
+        <button className="btn" onClick={() => navigate("/guided-explorer")}>
+          ← Back to Explorer
+        </button>
+        <button className="btn" onClick={() => navigate("/browse-options")}>
+          Browse more options
+        </button>
       </div>
     </div>
   );

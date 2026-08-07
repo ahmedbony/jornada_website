@@ -7,11 +7,20 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:server": "node server/index.cjs",
+    "dev:all": "concurrently -n vite,api -c cyan,yellow \"npm run dev\" \"npm run dev:server\"",
+    "start": "NODE_ENV=production node server/index.cjs"
   },
   "dependencies": {
+    "bcryptjs": "3.0.3",
+    "concurrently": "10.0.3",
+    "dotenv": "16.5.0",
+    "express": "5.2.1",
     "html2canvas": "^1.4.1",
+    "jsonwebtoken": "9.0.3",
     "jspdf": "^4.2.1",
+    "multer": "^2.2.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.18.0"

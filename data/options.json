@@ -1,0 +1,266 @@
+[
+  {
+    "id": "managed-recharge",
+    "icon": "⇊",
+    "title": "Managed aquifer recharge",
+    "description": "Intentionally infiltrate water to recharge aquifers for later use.",
+    "tags": [
+      "Recharge",
+      "Infrastructure"
+    ],
+    "cost": "medium",
+    "context": [
+      "groundwater",
+      "regional"
+    ],
+    "waterStress": [
+      "groundwater-decline",
+      "drought"
+    ],
+    "waterOutcome": [
+      "recharge",
+      "flexibility"
+    ],
+    "priorities": [
+      "funding-eligible"
+    ],
+    "scale": "district",
+    "evidence": "strong"
+  },
+  {
+    "id": "groundwater-plan",
+    "icon": "📋",
+    "title": "Groundwater conservation plan",
+    "description": "Develop and implement a plan to reduce groundwater use.",
+    "tags": [
+      "Planning",
+      "Management"
+    ],
+    "cost": "low",
+    "context": [
+      "groundwater",
+      "regional"
+    ],
+    "waterStress": [
+      "groundwater-decline",
+      "pumping-costs",
+      "allocation-limits"
+    ],
+    "waterOutcome": [
+      "reduce-demand",
+      "flexibility"
+    ],
+    "priorities": [
+      "producer-scale",
+      "low-cost"
+    ],
+    "scale": "district",
+    "evidence": "strong"
+  },
+  {
+    "id": "irrigation-scheduling",
+    "icon": "⏱",
+    "title": "Irrigation scheduling",
+    "description": "Adjust irrigation timing and amounts to reduce unnecessary pumping.",
+    "tags": [
+      "Efficiency",
+      "On-farm"
+    ],
+    "cost": "low",
+    "context": [
+      "irrigated",
+      "groundwater"
+    ],
+    "waterStress": [
+      "groundwater-decline",
+      "pumping-costs",
+      "soil-moisture-deficit"
+    ],
+    "waterOutcome": [
+      "reduce-demand",
+      "improve-timing"
+    ],
+    "priorities": [
+      "producer-scale",
+      "low-cost",
+      "evidence-base"
+    ],
+    "scale": "on-farm",
+    "evidence": "strong"
+  },
+  {
+    "id": "water-lease",
+    "icon": "🤝",
+    "title": "Water lease and purchase",
+    "description": "Acquire or lease water rights to meet needs.",
+    "tags": [
+      "Market-based",
+      "Transfer"
+    ],
+    "cost": "high",
+    "context": [
+      "canals",
+      "regional"
+    ],
+    "waterStress": [
+      "surface-shortage",
+      "allocation-limits"
+    ],
+    "waterOutcome": [
+      "flexibility"
+    ],
+    "priorities": [
+      "funding-eligible"
+    ],
+    "scale": "district",
+    "evidence": "moderate"
+  },
+  {
+    "id": "forecasting-tools",
+    "icon": "📈",
+    "title": "Forecasting tools",
+    "description": "Use data and models to forecast aquifer levels and availability.",
+    "tags": [
+      "Information",
+      "Planning"
+    ],
+    "cost": "low",
+    "context": [
+      "groundwater",
+      "regional"
+    ],
+    "waterStress": [
+      "groundwater-decline",
+      "drought"
+    ],
+    "waterOutcome": [
+      "improve-timing",
+      "flexibility"
+    ],
+    "priorities": [
+      "low-cost",
+      "evidence-base"
+    ],
+    "scale": "district",
+    "evidence": "moderate"
+  },
+  {
+    "id": "drought-planning",
+    "icon": "🛡",
+    "title": "Drought planning",
+    "description": "Plan for drought conditions and water shortages.",
+    "tags": [
+      "Planning",
+      "Resilience"
+    ],
+    "cost": "low",
+    "context": [
+      "rangeland",
+      "livestock",
+      "regional"
+    ],
+    "waterStress": [
+      "drought",
+      "surface-shortage"
+    ],
+    "waterOutcome": [
+      "flexibility"
+    ],
+    "priorities": [
+      "producer-scale",
+      "low-cost",
+      "arid-suitable"
+    ],
+    "scale": "district",
+    "evidence": "strong"
+  },
+  {
+    "id": "solar-shade",
+    "icon": "☀",
+    "title": "Solar shade",
+    "description": "Use structures or materials over water surfaces to lower evaporation.",
+    "tags": [
+      "Emerging / context-dependent",
+      "Reduce evaporation"
+    ],
+    "cost": "medium",
+    "context": [
+      "groundwater",
+      "canals",
+      "irrigated"
+    ],
+    "waterStress": [
+      "drought",
+      "heat-stress",
+      "surface-shortage"
+    ],
+    "waterOutcome": [
+      "reduce-demand",
+      "water-quality"
+    ],
+    "priorities": [
+      "arid-suitable"
+    ],
+    "scale": "on-farm",
+    "evidence": "moderate"
+  },
+  {
+    "id": "soil-moisture-monitoring",
+    "icon": "📡",
+    "title": "Soil moisture monitoring",
+    "description": "Use sensors to guide irrigation based on real-time soil conditions.",
+    "tags": [
+      "Tools / calculators",
+      "On-farm"
+    ],
+    "cost": "medium",
+    "context": [
+      "irrigated"
+    ],
+    "waterStress": [
+      "soil-moisture-deficit",
+      "pumping-costs"
+    ],
+    "waterOutcome": [
+      "improve-timing",
+      "soil-storage"
+    ],
+    "priorities": [
+      "producer-scale",
+      "evidence-base"
+    ],
+    "scale": "on-farm",
+    "evidence": "strong"
+  },
+  {
+    "id": "drought-tolerant-crops",
+    "icon": "🌾",
+    "title": "Drought-tolerant crop selection",
+    "description": "Shift to crop varieties that need less water and tolerate heat stress.",
+    "tags": [
+      "Crop choice",
+      "Reduce water demand"
+    ],
+    "cost": "low",
+    "context": [
+      "irrigated",
+      "rangeland"
+    ],
+    "waterStress": [
+      "drought",
+      "heat-stress",
+      "soil-moisture-deficit"
+    ],
+    "waterOutcome": [
+      "reduce-demand"
+    ],
+    "priorities": [
+      "producer-scale",
+      "low-cost",
+      "arid-suitable",
+      "low-labor"
+    ],
+    "scale": "on-farm",
+    "evidence": "moderate"
+  }
+]
