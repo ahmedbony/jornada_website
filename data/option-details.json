@@ -25,8 +25,14 @@
       "funding",
       "extension"
     ],
-    "overviewImage": "/uploads/1786136646945-8mjn016au5g.jpg",
-    "waterOutcomesImage": "/uploads/1786136673765-c693mlvfegn.png"
+    "overviewImage": {
+      "url": "/uploads/1786136646945-8mjn016au5g.jpg",
+      "caption": "asdasd"
+    },
+    "waterOutcomesImage": {
+      "url": "/uploads/1786136673765-c693mlvfegn.png",
+      "caption": "asdasdasd"
+    }
   },
   "groundwater-plan": {
     "overview": "A groundwater conservation plan lays out specific goals, monitoring practices, and management actions to bring groundwater use in line with sustainable supply — often developed jointly by a group of producers or a local management agency.",
@@ -115,6 +121,18 @@
     "caseStudies": "Producer trials comparing yield and water use across conventional and drought-tolerant varieties.",
     "resourceTypes": [
       "extension",
+      "guides"
+    ]
+  },
+  "option-1786734574346": {
+    "overview": "asdasd",
+    "waterOutcomes": "asdasd",
+    "implementation": "asdasd",
+    "whereItFits": "asdasd",
+    "benefits": "asdasd",
+    "costsLimitations": "asdasd",
+    "caseStudies": "asdasd",
+    "resourceTypes": [
       "guides"
     ]
   }

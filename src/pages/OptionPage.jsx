@@ -147,7 +147,18 @@ export default function OptionPage() {
                 .split("\n\n").map((p, i) => <p key={i}>{p}</p>)}
             </div>
             {details.overviewImage
-              ? <img src={details.overviewImage} alt={`${option.title} overview`} className="option-section-image" />
+              ? (
+                <div className="option-image-wrap">
+                  <img
+                    src={typeof details.overviewImage === "object" ? details.overviewImage.url : details.overviewImage}
+                    alt={`${option.title} overview`}
+                    className="option-section-image"
+                  />
+                  {details.overviewImage?.caption && (
+                    <p className="option-image-caption">{details.overviewImage.caption}</p>
+                  )}
+                </div>
+              )
               : <div className="diagram-placeholder" aria-hidden="true">photo / diagram</div>}
           </div>
         </Section>
@@ -167,8 +178,18 @@ export default function OptionPage() {
                     </>
                   : null}
             </div>
-            {details.waterOutcomesImage &&
-              <img src={details.waterOutcomesImage} alt="Water outcomes diagram" className="option-section-image" />}
+            {details.waterOutcomesImage && (
+              <div className="option-image-wrap">
+                <img
+                  src={typeof details.waterOutcomesImage === "object" ? details.waterOutcomesImage.url : details.waterOutcomesImage}
+                  alt="Water outcomes diagram"
+                  className="option-section-image"
+                />
+                {details.waterOutcomesImage?.caption && (
+                  <p className="option-image-caption">{details.waterOutcomesImage.caption}</p>
+                )}
+              </div>
+            )}
           </div>
         </Section>
 

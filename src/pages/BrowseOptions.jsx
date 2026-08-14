@@ -3,9 +3,6 @@ import { Link } from "react-router-dom";
 import { LANDSCAPE_PINS, costLabel } from "../data/options.js";
 import { useContent } from "../context/ContentContext.jsx";
 import { usePacket } from "../context/PacketContext.jsx";
-import {
-  CONTEXTS, WATER_STRESSES, WATER_OUTCOMES, SCALES, COSTS, EVIDENCE_LEVELS
-} from "../data/taxonomy.js";
 import { trackPageView, trackAddToPacket, trackSearch } from "../hooks/useAnalytics.js";
 
 // ─── Landscape pins — easy to reconfigure when permanent image arrives ────
@@ -68,7 +65,15 @@ function PacketBtn({ option }) {
 }
 
 export default function BrowseOptions() {
-  const { options: OPTIONS } = useContent();
+  const { options: OPTIONS, taxonomy } = useContent();
+
+  // Use dynamic taxonomy from API, fall back to empty arrays during load
+  const CONTEXTS       = taxonomy?.contexts      || [];
+  const WATER_STRESSES = taxonomy?.waterStresses || [];
+  const WATER_OUTCOMES = taxonomy?.waterOutcomes || [];
+  const SCALES         = taxonomy?.scales        || [];
+  const COSTS          = taxonomy?.costs         || [];
+  const EVIDENCE_LEVELS= taxonomy?.evidenceLevels|| [];
   const [tab, setTab] = useState("list");
   const [search, setSearch] = useState("");
 

@@ -80,9 +80,28 @@ function LoginScreen({ onLogin }) {
 }
 
 // ─── Reusable field components ────────────────────────────────────────────
-function MultiSelect({ label, choices, selected = [], onChange }) {
+function MultiSelect({ label, choices, selected = [], onChange, onAddNew }) {
+  const [adding,   setAdding]   = useState(false);
+  const [newLabel, setNewLabel] = useState("");
+
   const toggle = (key) =>
     onChange(selected.includes(key) ? selected.filter((k) => k !== key) : [...selected, key]);
+
+  function submitNew() {
+    const trimmed = newLabel.trim();
+    if (!trimmed) return;
+    const key = trimmed.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    if (choices.some((c) => c.key === key)) {
+      // Already exists — just select it
+      if (!selected.includes(key)) onChange([...selected, key]);
+    } else {
+      onAddNew({ key, label: trimmed });
+      onChange([...selected, key]);
+    }
+    setNewLabel("");
+    setAdding(false);
+  }
+
   return (
     <div className="admin-field">
       <label className="admin-label">{label}</label>
@@ -96,6 +115,25 @@ function MultiSelect({ label, choices, selected = [], onChange }) {
           </button>
         ))}
       </div>
+
+      {adding ? (
+        <div className="add-new-row">
+          <input
+            className="admin-input"
+            placeholder={`New ${label.toLowerCase()} label…`}
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitNew(); } if (e.key === "Escape") setAdding(false); }}
+            autoFocus
+          />
+          <button className="btn btn-primary" style={{ padding: "8px 14px", fontSize: "0.85rem" }} onClick={submitNew}>Add</button>
+          <button className="btn" style={{ padding: "8px 14px", fontSize: "0.85rem" }} onClick={() => { setAdding(false); setNewLabel(""); }}>Cancel</button>
+        </div>
+      ) : (
+        <button type="button" className="add-new-trigger" onClick={() => setAdding(true)}>
+          + Add new {label.toLowerCase()}
+        </button>
+      )}
     </div>
   );
 }
@@ -128,10 +166,22 @@ function TextArea({ label, value = "", onChange, rows = 3, hint }) {
 }
 
 // ─── Image upload component ───────────────────────────────────────────────
+// value shape: { url: string, caption: string } | null
+// For backward compat, also accepts a plain string URL.
+function imgUrl(val)     { return val && typeof val === "object" ? val.url     : (val || null); }
+function imgCaption(val) { return val && typeof val === "object" ? val.caption : ""; }
+
 function ImageUpload({ label, value, onChange }) {
   const [uploading, setUploading] = useState(false);
-  const [error, setError]         = useState(null);
+  const [error,     setError]     = useState(null);
   const inputRef                  = useRef(null);
+
+  const url     = imgUrl(value);
+  const caption = imgCaption(value);
+
+  function update(patch) {
+    onChange({ url: url || "", caption, ...patch });
+  }
 
   async function handleFile(e) {
     const file = e.target.files?.[0];
@@ -148,7 +198,7 @@ function ImageUpload({ label, value, onChange }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload failed");
-      onChange(data.url);
+      onChange({ url: data.url, caption });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -158,26 +208,34 @@ function ImageUpload({ label, value, onChange }) {
   }
 
   async function handleRemove() {
-    if (!value) return;
+    if (!url) return;
     try {
-      const filename = value.split("/").pop();
+      const filename = url.split("/").pop();
       await fetch(`/api/upload/${filename}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-    } catch { /* ignore delete errors */ }
+    } catch { /* ignore */ }
     onChange(null);
   }
 
   return (
     <div className="admin-field">
       <label className="admin-label">{label}</label>
-      {value ? (
+      {url ? (
         <div className="image-upload-preview">
-          <img src={value} alt="Uploaded" className="image-preview-img" />
+          <img src={url} alt="Uploaded" className="image-preview-img" />
           <div className="image-preview-actions">
-            <span className="admin-hint" style={{ fontSize: "0.78rem" }}>{value}</span>
-            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <div className="admin-field" style={{ marginBottom: 8 }}>
+              <label className="admin-label">Caption <span className="admin-hint">(optional)</span></label>
+              <input
+                className="admin-input"
+                placeholder="Add a caption or description…"
+                value={caption}
+                onChange={(e) => update({ caption: e.target.value })}
+              />
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
               <button type="button" className="btn" style={{ fontSize: "0.82rem", padding: "6px 12px" }}
                 onClick={() => inputRef.current?.click()}>
                 Replace image
@@ -302,9 +360,14 @@ function PageContentEditor({ optionId, details = {}, onChange }) {
 }
 
 // ─── Option card ──────────────────────────────────────────────────────────
-function OptionCard({ option, details, onChange, onChangeDetails, onDelete, defaultOpen }) {
+function OptionCard({ option, details, onChange, onChangeDetails, onDelete, onAddToTaxonomy, taxonomy, defaultOpen }) {
   const [open, setOpen] = useState(defaultOpen);
   const set = (field, val) => onChange({ ...option, [field]: val });
+
+  const ctx = taxonomy?.contexts    || CONTEXTS;
+  const ws  = taxonomy?.waterStresses || WATER_STRESSES;
+  const wo  = taxonomy?.waterOutcomes || WATER_OUTCOMES;
+  const pri = taxonomy?.priorities   || PRIORITIES;
 
   return (
     <div className={`admin-card${open ? " open" : ""}`}>
@@ -365,10 +428,10 @@ function OptionCard({ option, details, onChange, onChangeDetails, onDelete, defa
             </div>
           </div>
           <TagsInput label="Display tags" value={option.tags || []} onChange={(v) => set("tags", v)} />
-          <MultiSelect label="Context" choices={CONTEXTS} selected={option.context || []} onChange={(v) => set("context", v)} />
-          <MultiSelect label="Water stresses" choices={WATER_STRESSES} selected={option.waterStress || []} onChange={(v) => set("waterStress", v)} />
-          <MultiSelect label="Water outcomes" choices={WATER_OUTCOMES} selected={option.waterOutcome || []} onChange={(v) => set("waterOutcome", v)} />
-          <MultiSelect label="Priorities" choices={PRIORITIES} selected={option.priorities || []} onChange={(v) => set("priorities", v)} />
+          <MultiSelect label="Context"       choices={ctx} selected={option.context    || []} onChange={(v) => set("context", v)}      onAddNew={(item) => onAddToTaxonomy("contexts", item)} />
+          <MultiSelect label="Water stresses" choices={ws} selected={option.waterStress|| []} onChange={(v) => set("waterStress", v)}   onAddNew={(item) => onAddToTaxonomy("waterStresses", item)} />
+          <MultiSelect label="Water outcomes" choices={wo} selected={option.waterOutcome|| []} onChange={(v) => set("waterOutcome", v)} onAddNew={(item) => onAddToTaxonomy("waterOutcomes", item)} />
+          <MultiSelect label="Priorities"    choices={pri} selected={option.priorities  || []} onChange={(v) => set("priorities", v)}   onAddNew={(item) => onAddToTaxonomy("priorities", item)} />
           <PageContentEditor optionId={option.id} details={details} onChange={onChangeDetails} />
         </div>
       )}
@@ -555,18 +618,29 @@ export default function Admin() {
   const [options,       setOptions]       = useState(null);
   const [resources,     setResources]     = useState(null);
   const [optionDetails, setOptionDetails] = useState(null);
+  const [taxonomy,      setTaxonomy]      = useState(null);
   const [status,   setStatus]   = useState(null);
   const [saving,   setSaving]   = useState(false);
 
+  // Add a new item to a specific taxonomy dimension
+  function addToTaxonomy(dimension, item) {
+    setTaxonomy((prev) => ({
+      ...prev,
+      [dimension]: [...(prev[dimension] || []), item],
+    }));
+  }
+
   async function loadContent() {
-    const [opts, res, details] = await Promise.all([
+    const [opts, res, details, tax] = await Promise.all([
       apiFetch("/api/content/options"),
       apiFetch("/api/content/resources"),
       apiFetch("/api/content/option-details"),
+      apiFetch("/api/content/taxonomy"),
     ]);
     setOptions(JSON.parse(JSON.stringify(opts)));
     setResources(JSON.parse(JSON.stringify(res)));
     setOptionDetails(JSON.parse(JSON.stringify(details)));
+    setTaxonomy(JSON.parse(JSON.stringify(tax)));
   }
 
   useEffect(() => {
@@ -598,7 +672,7 @@ export default function Admin() {
   function handleLogout() {
     dropToken();
     setAuthed(false);
-    setOptions(null); setResources(null); setOptionDetails(null);
+    setOptions(null); setResources(null); setOptionDetails(null); setTaxonomy(null);
     setStatus(null);
   }
 
@@ -609,6 +683,7 @@ export default function Admin() {
         apiFetch("/api/content/options",        { method: "PUT", body: JSON.stringify(options) }),
         apiFetch("/api/content/resources",      { method: "PUT", body: JSON.stringify(resources) }),
         apiFetch("/api/content/option-details", { method: "PUT", body: JSON.stringify(optionDetails) }),
+        apiFetch("/api/content/taxonomy",       { method: "PUT", body: JSON.stringify(taxonomy) }),
       ]);
       setStatus({ type: "success", msg: "✓ Saved successfully." });
     } catch (err) {
@@ -630,13 +705,14 @@ export default function Admin() {
     </div>
   );
   if (!authed) return <LoginScreen onLogin={handleLogin} />;
-  if (!options || !resources || !optionDetails) return (
-    <div className="login-screen">
-      <div className="login-card">
-        <p style={{ color: "var(--ink-400)", margin: 0 }}>Loading content…</p>
+  if (!options || !resources || !optionDetails || !taxonomy)
+    return (
+      <div className="login-screen">
+        <div className="login-card">
+          <p style={{ color: "var(--ink-400)", margin: 0 }}>Loading content…</p>
+        </div>
       </div>
-    </div>
-  );
+    );
 
   return (
     <div className="page admin-page">
@@ -685,9 +761,11 @@ export default function Admin() {
           {options.map((opt, i) => (
             <OptionCard key={opt.id} option={opt}
               details={optionDetails[opt.id] || {}}
+              taxonomy={taxonomy}
               defaultOpen={opt.id.startsWith("option-")}
               onChange={(u) => setOptions(options.map((o, j) => j === i ? u : o))}
               onChangeDetails={(d) => setOptionDetails({ ...optionDetails, [opt.id]: d })}
+              onAddToTaxonomy={addToTaxonomy}
               onDelete={() => setOptions(options.filter((_, j) => j !== i))} />
           ))}
         </div>

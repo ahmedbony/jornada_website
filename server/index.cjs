@@ -176,7 +176,7 @@ app.delete("/api/upload/:filename", requireAuth, (req, res) => {
 });
 
 // ─── Content routes ───────────────────────────────────────────────────────
-const ALLOWED = ["options", "resources", "option-details"];
+const ALLOWED = ["options", "resources", "option-details", "taxonomy"];
 
 // GET — public (no auth needed, the site reads these)
 app.get("/api/content/:name", (req, res) => {
@@ -201,7 +201,7 @@ app.put("/api/content/:name", requireAuth, (req, res) => {
   if (!ALLOWED.includes(name))
     return res.status(400).json({ error: "Unknown content file" });
 
-  if (name !== "option-details" && !Array.isArray(req.body))
+  if (!["option-details", "taxonomy"].includes(name) && !Array.isArray(req.body))
     return res.status(400).json({ error: "Body must be a JSON array" });
 
   try {

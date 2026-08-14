@@ -4,12 +4,17 @@ import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { usePacket } from "../context/PacketContext.jsx";
 import { useContent } from "../context/ContentContext.jsx";
-import { CONTEXTS, WATER_STRESSES, WATER_OUTCOMES, PRIORITIES, labelFor } from "../data/taxonomy.js";
+import { labelFor } from "../data/taxonomy.js";
 import { costLabel } from "../data/options.js";
 
 export default function AdaptationPacket() {
   const { answers, packetItems, removeFromPacket } = usePacket();
-  const { options: OPTIONS, resources: RESOURCES } = useContent();
+  const { options: OPTIONS, resources: RESOURCES, taxonomy } = useContent();
+
+  const CONTEXTS       = taxonomy?.contexts      || [];
+  const WATER_STRESSES = taxonomy?.waterStresses || [];
+  const WATER_OUTCOMES = taxonomy?.waterOutcomes || [];
+  const PRIORITIES     = taxonomy?.priorities    || [];
   const navigate = useNavigate();
   const contentRef = useRef(null);
   const [downloading, setDownloading] = useState(false);

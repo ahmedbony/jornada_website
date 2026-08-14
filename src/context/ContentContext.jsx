@@ -2,6 +2,15 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { OPTIONS as STATIC_OPTIONS } from "../data/options.js";
 import { RESOURCES as STATIC_RESOURCES } from "../data/resources.js";
 import { OPTION_DETAILS as STATIC_DETAILS } from "../data/optionDetails.js";
+import {
+  CONTEXTS, WATER_STRESSES, WATER_OUTCOMES, PRIORITIES,
+  SCALES, COSTS, EVIDENCE_LEVELS,
+} from "../data/taxonomy.js";
+
+const STATIC_TAXONOMY = {
+  contexts: CONTEXTS, waterStresses: WATER_STRESSES, waterOutcomes: WATER_OUTCOMES,
+  priorities: PRIORITIES, scales: SCALES, costs: COSTS, evidenceLevels: EVIDENCE_LEVELS,
+};
 
 const ContentContext = createContext(null);
 
@@ -9,6 +18,7 @@ export function ContentProvider({ children }) {
   const [options,       setOptions]       = useState(STATIC_OPTIONS);
   const [resources,     setResources]     = useState(STATIC_RESOURCES);
   const [optionDetails, setOptionDetails] = useState(STATIC_DETAILS);
+  const [taxonomy,      setTaxonomy]      = useState(STATIC_TAXONOMY);
   const [loading,       setLoading]       = useState(true);
 
   useEffect(() => {
@@ -16,18 +26,20 @@ export function ContentProvider({ children }) {
       fetch("/api/content/options").then((r)        => r.ok ? r.json() : null),
       fetch("/api/content/resources").then((r)      => r.ok ? r.json() : null),
       fetch("/api/content/option-details").then((r) => r.ok ? r.json() : null),
+      fetch("/api/content/taxonomy").then((r)       => r.ok ? r.json() : null),
     ])
-      .then(([opts, res, details]) => {
+      .then(([opts, res, details, tax]) => {
         if (opts)    setOptions(opts);
         if (res)     setResources(res);
         if (details) setOptionDetails(details);
+        if (tax)     setTaxonomy(tax);
       })
-      .catch(() => { /* network error — static fallback already set */ })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   return (
-    <ContentContext.Provider value={{ options, resources, optionDetails, loading }}>
+    <ContentContext.Provider value={{ options, resources, optionDetails, taxonomy, loading }}>
       {children}
     </ContentContext.Provider>
   );

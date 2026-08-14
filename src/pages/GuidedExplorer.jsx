@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { usePacket } from "../context/PacketContext.jsx";
 import { useContent } from "../context/ContentContext.jsx";
 import { costLabel } from "../data/options.js";
-import { CONTEXTS, WATER_STRESSES, WATER_OUTCOMES, PRIORITIES, labelFor } from "../data/taxonomy.js";
+import { labelFor } from "../data/taxonomy.js";
 
 function overlapScore(optionList = [], selected = []) {
   return optionList.filter((tag) => selected.includes(tag)).length;
@@ -64,8 +64,13 @@ function SuggestedCard({ opt }) {
 }
 
 export default function GuidedExplorer() {
-  const { options: OPTIONS } = useContent();
+  const { options: OPTIONS, taxonomy } = useContent();
   const { answers, setAnswers, clearAnswers, setHasGenerated, packetItems } = usePacket();
+
+  const CONTEXTS       = taxonomy?.contexts      || [];
+  const WATER_STRESSES = taxonomy?.waterStresses || [];
+  const WATER_OUTCOMES = taxonomy?.waterOutcomes || [];
+  const PRIORITIES     = taxonomy?.priorities    || [];
   const navigate = useNavigate();
 
   useEffect(() => { trackPageView("/guided-explorer"); }, []);

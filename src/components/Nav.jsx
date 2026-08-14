@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { usePacket } from "../context/PacketContext.jsx";
 
-// Add a new page here and it shows up in the nav everywhere — nothing
-// else needs to change.
 const NAV_LINKS = [
   { label: "Home", to: "/" },
   { label: "Browse Options", to: "/browse-options" },
   { label: "Tools & Resources", to: "/tools-resources" },
   { label: "Guided Explorer", to: "/guided-explorer" },
+  { label: "My Packet", to: "/packet" },
 ];
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
+  const { packetItems } = usePacket();
+  const packetCount = packetItems.length;
 
   return (
     <>
@@ -48,6 +50,9 @@ export default function Nav() {
                   className={({ isActive }) => (isActive ? "active" : undefined)}
                 >
                   {link.label}
+                  {link.to === "/packet" && packetCount > 0 && (
+                    <span className="nav-packet-badge">{packetCount}</span>
+                  )}
                 </NavLink>
               </li>
             ))}
