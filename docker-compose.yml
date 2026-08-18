@@ -1,0 +1,24 @@
+services:
+  wam:
+    build: .
+    container_name: wam
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - ADMIN_USER=${ADMIN_USER:-admin}
+      - ADMIN_PASS=${ADMIN_PASS:-changeme}
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret}
+      - DATA_DIR=/app/data
+      - UPLOADS_DIR=/app/uploads
+    volumes:
+      - wam_data:/app/data
+      - wam_uploads:/app/uploads
+
+volumes:
+  wam_data:
+    name: wam_data
+  wam_uploads:
+    name: wam_uploads
